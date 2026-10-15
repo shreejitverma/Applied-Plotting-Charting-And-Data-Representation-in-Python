@@ -34,7 +34,7 @@ import pandas as pd
 
 def leaflet_plot_stations(binsize, hashid):
 
-    df = pd.read_csv('data/C2A2_data/BinSize_d{}.csv'.format(binsize))
+    df = pd.read_csv(f'data/C2A2_data/BinSize_d{binsize}.csv')
 
     station_locations_by_hash = df[df['hash'] == hashid]
 

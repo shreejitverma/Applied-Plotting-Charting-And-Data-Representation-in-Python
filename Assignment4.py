@@ -58,15 +58,10 @@ def get_list_of_university_towns():
             if thisLine[-6:] == '[edit]':
                 state = thisLine[:-6]
                 continue
-            if '(' in line:
-                town = thisLine[:thisLine.index('(')-1]
-                state_towns.append([state,town])
-            else:
-                town = thisLine
-                state_towns.append([state,town])
+            town = thisLine[:thisLine.index('(')-1] if '(' in line else thisLine
+            state_towns.append([state,town])
             data.append(thisLine)
-    df = pd.DataFrame(state_towns,columns = ['State','RegionName'])
-    return df
+    return pd.DataFrame(state_towns,columns = ['State','RegionName'])
 
 
 # In[4]:
@@ -79,7 +74,7 @@ def get_recession_start():
     gdplev = gdplev[['1999q4', 9926.1]]
     gdplev.columns = ['Quarter','GDP']
     for i in range(2, len(gdplev)):
-        if (gdplev.iloc[i-2][1] > gdplev.iloc[i-1][1]) and (gdplev.iloc[i-1][1] > gdplev.iloc[i][1]):
+        if gdplev.iloc[i - 2][1] > gdplev.iloc[i - 1][1] > gdplev.iloc[i][1]:
             return gdplev.iloc[i-2][0]
 get_recession_start()
 
@@ -97,7 +92,7 @@ def get_recession_end():
     start_index = gdplev[gdplev['Quarter'] == start].index.tolist()[0]
     gdplev=gdplev.iloc[start_index:]
     for i in range(2, len(gdplev)):
-        if (gdplev.iloc[i-2][1] < gdplev.iloc[i-1][1]) and (gdplev.iloc[i-1][1] < gdplev.iloc[i][1]):
+        if gdplev.iloc[i - 2][1] < gdplev.iloc[i - 1][1] < gdplev.iloc[i][1]:
             return gdplev.iloc[i][0]
 
 
@@ -128,8 +123,7 @@ def new_col_names():
     quars = ['q1','q2','q3','q4']
     quar_years = []
     for i in years:
-        for x in quars:
-            quar_years.append((str(i)+x))
+        quar_years.extend(str(i)+x for x in quars)
     return quar_years[:67]
 def convert_housing_data_to_quarters():
     '''Converts the housing data to quarters and returns it as mean
@@ -147,7 +141,7 @@ def convert_housing_data_to_quarters():
     data['State'] = data['State'].map(states)
     data.set_index(['State','RegionName'],inplace=True)
     col = list(data.columns)
-    col = col[0:45]
+    col = col[:45]
     data.drop(col,axis=1,inplace=1)
 
     #qs is the quarters of the year
@@ -196,10 +190,7 @@ def run_ttest():
 
     def is_uni_town(row):
         #check if the town is a university towns or not.
-        if row['RegionName'] in uni_town:
-            return 1
-        else:
-            return 0
+        return 1 if row['RegionName'] in uni_town else 0
     data['is_uni'] = data.apply(is_uni_town,axis=1)
 
 
